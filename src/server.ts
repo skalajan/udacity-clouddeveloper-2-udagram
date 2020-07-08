@@ -17,7 +17,6 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   // GET /filteredimage?image_url={{URL}}
   // endpoint to filter an image from a public url.
   // IT SHOULD
-  //    1
   //    1. validate the image_url query
   //    2. call filterImageFromURL(image_url) to filter the image
   //    3. send the resulting file in the response
@@ -28,13 +27,37 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+  app.get("/filteredimage", async (req, res) => {
+    console.log(`Called`);
+    let url = req.query.image_url;
 
+    console.log(`Called`);
+    if(url != null && url.length > 0){
+      console.log(`Url: ${url}`);
+      var file: string = null;
+      try{
+        file = await filterImageFromURL(url);
+        res.sendFile(file);
+        res.on('finish', ()=>{
+          if(file !== null){
+            deleteLocalFiles([file])
+          }
+        });
+      }catch(e){
+        res.statusCode = 422;
+        res.send(`couldn't process ${url}.`);
+      }
+    }else{
+      res.statusCode = 422;
+      res.send("image_url query param can't be empty.");
+    }
+  });
   //! END @TODO1
   
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async ( req, res ) => {
-    res.send("try GET /filteredimage?image_url={{}}")
+    res.send("try GET /filteredimage?image_url={{}}");
   } );
   
 
